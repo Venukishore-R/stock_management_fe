@@ -6,6 +6,9 @@ import Form from "../components/Form";
 import axios from 'axios';
 
 function Products() {
+    // const backEndAppUrl = import.meta.env.BACK_END_APP_URL;
+    const backEndAppUrl = "https://stock-management-be-wq7x.onrender.com";
+
     const [products, setProducts] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [editFormData, setEditFormData] = useState(null);
@@ -15,7 +18,7 @@ function Products() {
         let config = {
             method: 'get',
             maxBodyLength: Infinity,
-            url: 'http://localhost:3000/api/products',
+            url: `${backEndAppUrl}/api/products`,
             headers: {}
         };
 
@@ -46,7 +49,7 @@ function Products() {
         let config = {
             method: 'delete',
             maxBodyLength: Infinity,
-            url: 'http://localhost:3000/api/product',
+            url: `${backEndAppUrl}/api/product`,
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -73,7 +76,7 @@ function Products() {
             let config = {
                 method: 'put',
                 maxBodyLength: Infinity,
-                url: 'http://localhost:3000/api/product',
+                url: `${backEndAppUrl}/api/product`,
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -96,7 +99,7 @@ function Products() {
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
-                url: 'http://localhost:3000/api/product',
+                url: `${backEndAppUrl}/api/product`,
                 headers: {
                     'Content-Type': 'application/json'
                 },

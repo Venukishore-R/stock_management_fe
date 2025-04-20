@@ -33,6 +33,10 @@ function TopCard({ totalSold, totalRevenue }) {
 }
 
 function Home() {
+    // const backEndAppUrl = import.meta.env.BACK_END_APP_URL;
+    const backEndAppUrl = "https://stock-management-be-wq7x.onrender.com";
+
+
     const [stockDatas, setStockDatas] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -45,7 +49,7 @@ function Home() {
         let config = {
             method: 'get',
             maxBodyLength: Infinity,
-            url: 'http://localhost:3000/api/stocks',
+            url: `${backEndAppUrl}/api/stocks`,
             headers: {}
         };
 
@@ -108,7 +112,7 @@ function Home() {
         let config = {
             method: 'put',
             maxBodyLength: Infinity,
-            url: 'http://localhost:3000/api/stock',
+            url: `${backEndAppUrl}/api/stock`,
             headers: {
                 'Content-Type': 'application/json'
             },
