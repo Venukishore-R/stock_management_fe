@@ -103,15 +103,49 @@ const StockCardGrid = ({ stockDatas, handleSell }) => {
     );
 };
 
+function MessageModal({ show, handleClose, messageType, message }) {
+    return (
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton>
+                <Modal.Title>{messageType === 'success' ? 'Success' : 'Error'}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                {messageType === 'success' ? (
+                    <Card className="border-success">
+                        <Card.Body>
+                            <Card.Text className="text-success">
+                                {message}
+                            </Card.Text>
+                        </Card.Body>
+                    </Card>
+                ) : (
+                    <Card className="border-danger">
+                        <Card.Body>
+                            <Card.Text className="text-danger">
+                                {message}
+                            </Card.Text>
+                        </Card.Body>
+                    </Card>
+                )}
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>Close</Button>
+            </Modal.Footer>
+        </Modal>
+    );
+}
+
 function Home() {
     // const backEndAppUrl = import.meta.env.BACK_END_APP_URL;
     const backEndAppUrl = "https://stock-management-be-wq7x.onrender.com";
 
+    const [showMsgModal, setMsgShowModal] = useState(false);
+    const [messageType, setMessageType] = useState('');
+    const [message, setMessage] = useState('');
     const [stockDatas, setStockDatas] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [sellingQuantity, setSellingQuantity] = useState(0);
-
     useEffect(() => {
         let config = {
             method: 'get',
@@ -163,6 +197,7 @@ function Home() {
     }
 
     const handleSubmit = () => {
+
         let data = JSON.stringify({
             "productId": selectedItem.productId,
             "price": selectedItem.price,
@@ -189,21 +224,54 @@ function Home() {
         axios.request(config)
             .then((response) => {
                 console.log(JSON.stringify(response.data));
-                setStockDatas((prev) =>
-                    prev.map((item) =>
-                        item.productId === selectedItem.productId
-                            ? {
-                                ...item,
-                                stockQuantity: item.stockQuantity - sellingQuantity,
-                                itemsSold: item.itemsSold + sellingQuantity,
-                                revenueGenerated: item.revenueGenerated + (selectedItem.price * sellingQuantity),
-                            }
-                            : item
-                    )
-                );
+
+                if (response.status === 200) {
+                    setMessageType('success');
+                    setMessage("Stock Updated Successfully");
+
+                    setStockDatas((prev) =>
+                        prev.map((item) =>
+                            item.productId === selectedItem.productId
+                                ? {
+                                    ...item,
+                                    stockQuantity: item.stockQuantity - sellingQuantity,
+                                    itemsSold: item.itemsSold + sellingQuantity,
+                                    revenueGenerated: item.revenueGenerated + (selectedItem.price * sellingQuantity),
+                                }
+                                : item
+                        )
+                    );
+                    setMsgShowModal(true);
+                    setShowModal(false);
+                    handleClose();
+                } else {
+                    setMessageType('error');
+                    setMessage("An error occurred while updating stock.");
+                    setMsgShowModal(true);
+                }
             })
             .catch((error) => {
-                console.log(error);
+
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        setMessageType('error');
+                        setMessage("Bad request. Please check the input.");
+                    } else if (error.response.status === 500) {
+                        setMessageType('error');
+                        setMessage(error.response.data?.message || "Server error. Please try again later.");
+                    } else {
+                        setMessageType('error');
+                        setMessage("An unknown error occurred.");
+                    }
+                } else if (error.request) {
+                    setMessageType('error');
+                    setMessage("No response from the server.");
+                } else {
+                    setMessageType('error');
+                    setMessage("Error in setting up request: " + error.message);
+                }
+
+                setMsgShowModal(true);
             });
 
         setShowModal(false);
@@ -257,6 +325,13 @@ function Home() {
                         <StockCardGrid stockDatas={stockDatas} handleSell={handleSell} />
                     </Card.Body>
                 </Card>
+
+                <MessageModal
+                    show={showMsgModal}
+                    handleClose={() => setMsgShowModal(false)}
+                    messageType={messageType}
+                    message={message}
+                />
 
                 {renderSellModal(selectedItem)}
             </Container>

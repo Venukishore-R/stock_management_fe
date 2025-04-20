@@ -1,4 +1,4 @@
-import { Container, Button, Row, Col, Card, Badge } from "react-bootstrap";
+import { Container, Button, Row, Col, Card, Badge, Modal } from "react-bootstrap";
 import Header from "../components/Header";
 import { useEffect, useState } from "react";
 import Form from "../components/Form";
@@ -61,10 +61,45 @@ const ProductCard = ({ product, onEdit, onDelete }) => {
     );
 };
 
+function MessageModal({ show, handleClose, messageType, message }) {
+    return (
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton>
+                <Modal.Title>{messageType === 'success' ? 'Success' : 'Error'}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                {messageType === 'success' ? (
+                    <Card className="border-success">
+                        <Card.Body>
+                            <Card.Text className="text-success">
+                                {message}
+                            </Card.Text>
+                        </Card.Body>
+                    </Card>
+                ) : (
+                    <Card className="border-danger">
+                        <Card.Body>
+                            <Card.Text className="text-danger">
+                                {message}
+                            </Card.Text>
+                        </Card.Body>
+                    </Card>
+                )}
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>Close</Button>
+            </Modal.Footer>
+        </Modal>
+    );
+}
+
 function Products() {
     // const backEndAppUrl = import.meta.env.BACK_END_APP_URL;
     const backEndAppUrl = "https://stock-management-be-wq7x.onrender.com";
 
+    const [showMsgModal, setMsgShowModal] = useState(false);
+    const [messageType, setMessageType] = useState('');
+    const [message, setMessage] = useState('');
     const [products, setProducts] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [editFormData, setEditFormData] = useState(null);
@@ -115,10 +150,39 @@ function Products() {
         axios.request(config)
             .then((response) => {
                 console.log(JSON.stringify(response.data));
-                setProducts((prev) => prev.filter((item) => item.id !== id));
+
+                if (response.status === 200) {
+                    setMessageType('success');
+                    setMessage("Product Deleted Successfully");
+                    setProducts((prev) => prev.filter((item) => item.id !== id));
+                    setMsgShowModal(true);
+                } else {
+                    setMessageType('error');
+                    setMessage("An error occurred while deleting product.");
+                    setMsgShowModal(true);
+                }
             })
             .catch((error) => {
-                console.log(error);
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        setMessageType('error');
+                        setMessage("Bad request. Please check the input.");
+                    } else if (error.response.status === 500) {
+                        setMessageType('error');
+                        setMessage(error.response.data?.message || "Server error. Please try again later.");
+                    } else {
+                        setMessageType('error');
+                        setMessage("An unknown error occurred.");
+                    }
+                } else if (error.request) {
+                    setMessageType('error');
+                    setMessage("No response from the server.");
+                } else {
+                    setMessageType('error');
+                    setMessage("Error in setting up request: " + error.message);
+                }
+
+                setMsgShowModal(true);
             });
     };
 
@@ -143,12 +207,43 @@ function Products() {
                 .then((response) => {
                     console.log(JSON.stringify(response.data));
 
-                    setProducts((prev) =>
-                        prev.map((item) => (item.id === data.id ? data : item))
-                    );
+                    if (response.status === 200) {
+                        setMessageType('success');
+                        setMessage("Product Updated Successfully");
+
+                        setProducts((prev) =>
+                            prev.map((item) => (item.id === data.id ? data : item))
+                        );
+
+                        setMsgShowModal(true);
+                    } else {
+                        setMessageType('error');
+                        setMessage("An error occurred while updating product.");
+                        setMsgShowModal(true);
+                    }
+
                 })
                 .catch((error) => {
-                    console.log(error);
+                    if (error.response) {
+                        if (error.response.status === 400) {
+                            setMessageType('error');
+                            setMessage("Bad request. Please check the input.");
+                        } else if (error.response.status === 500) {
+                            setMessageType('error');
+                            setMessage(error.response.data?.message || "Server error. Please try again later.");
+                        } else {
+                            setMessageType('error');
+                            setMessage("An unknown error occurred.");
+                        }
+                    } else if (error.request) {
+                        setMessageType('error');
+                        setMessage("No response from the server.");
+                    } else {
+                        setMessageType('error');
+                        setMessage("Error in setting up request: " + error.message);
+                    }
+
+                    setMsgShowModal(true);
                 });
         } else {
             const newProduct = JSON.stringify(data);
@@ -164,11 +259,42 @@ function Products() {
 
             axios.request(config)
                 .then((response) => {
-                    console.log(JSON.stringify(response.data));
-                    setProducts((prev) => [data, ...prev]);
+
+                    if (response.status === 200) {
+                        setMessageType('success');
+                        setMessage("Product Added Successfully");
+
+                        console.log(JSON.stringify(response.data));
+                        setProducts((prev) => [data, ...prev]);
+
+                        setMsgShowModal(true);
+                    } else {
+                        setMessageType('error');
+                        setMessage("An error occurred while creating product.");
+                        setMsgShowModal(true);
+                    }
                 })
                 .catch((error) => {
-                    console.log(error);
+                    if (error.response) {
+                        if (error.response.status === 400) {
+                            setMessageType('error');
+                            setMessage("Bad request. Please check the input.");
+                        } else if (error.response.status === 500) {
+                            setMessageType('error');
+                            setMessage(error.response.data?.message || "Server error. Please try again later.");
+                        } else {
+                            setMessageType('error');
+                            setMessage("An unknown error occurred.");
+                        }
+                    } else if (error.request) {
+                        setMessageType('error');
+                        setMessage("No response from the server.");
+                    } else {
+                        setMessageType('error');
+                        setMessage("Error in setting up request: " + error.message);
+                    }
+
+                    setMsgShowModal(true);
                 });
         }
 
@@ -215,7 +341,7 @@ function Products() {
                 </Card>
 
                 <div className="p-3 rounded bg-white shadow-sm">
-                    <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+                    <Row xs={1} sm={2} md={3} lg={3} className="g-4">
                         {products.map((product) => (
                             <Col key={product.id}>
                                 <ProductCard
@@ -228,15 +354,23 @@ function Products() {
                     </Row>
                 </div>
 
+                <Form
+                    show={showForm}
+                    onHide={() => setShowForm(false)}
+                    initialData={editFormData}
+                    onSubmit={handleFormSubmit}
+                    mode={editMode ? "edit" : "add"}
+                />
+
             </Container>
 
-            <Form
-                show={showForm}
-                onHide={() => setShowForm(false)}
-                initialData={editFormData}
-                onSubmit={handleFormSubmit}
-                mode={editMode ? "edit" : "add"}
+            <MessageModal
+                show={showMsgModal}
+                handleClose={() => setMsgShowModal(false)}
+                messageType={messageType}
+                message={message}
             />
+
         </Container>
     );
 }
