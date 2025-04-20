@@ -1,27 +1,29 @@
 .nav-link-custom {
-  font-weight: 500;
-  color: #333 !important;
   position: relative;
-  transition: all 0.3s ease;
+  color: #000;
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
-.nav-link-custom:hover,
-.nav-link-custom.active-link {
-  color: #4b0082 !important;
-  text-decoration: none;
+/* Underline on hover */
+.nav-link-custom:hover::after,
+.nav-link-custom.active-link::after {
+  width: 100%;
 }
 
 .nav-link-custom::after {
   content: "";
-  display: block;
-  width: 0%;
+  position: absolute;
+  width: 0;
   height: 2px;
-  background: #4b0082;
-  transition: width 0.3s;
-  margin-top: 4px;
+  left: 0;
+  bottom: -4px;
+  background-color: #800080; /* Purple underline */
+  transition: width 0.3s ease;
 }
 
-.nav-link-custom:hover::after,
-.nav-link-custom.active-link::after {
-  width: 100%;
+/* Optional: Change color when active */
+.nav-link-custom.active-link {
+  color: #800080;
+  font-weight: 600;
 }

@@ -1,9 +1,12 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Navbar, Container, Nav, NavDropdown } from 'react-bootstrap';
-import { FaUser } from "react-icons/fa";
+import { useLocation, Link } from 'react-router-dom';
 import { useState } from 'react';
 
 function Header() {
+    const location = useLocation();
+    const currentPath = location.pathname;
+
     const [activeLink, setActiveLink] = useState('home');
 
     const handleNavClick = (link) => {
@@ -33,31 +36,20 @@ function Header() {
 
                 <Navbar.Collapse id="navbarScroll">
                     <Nav className="ms-auto my-2 my-lg-0" navbarScroll>
-                        <Nav.Link
-                            href="/"
-                            className={`me-4 nav-link-custom ${activeLink === 'home' ? 'active-link' : ''}`}
-                            onClick={() => handleNavClick('home')}
-                        >
-                            Home
-                        </Nav.Link>
-                        <Nav.Link
-                            href="/products"
-                            className={`me-4 nav-link-custom ${activeLink === 'products' ? 'active-link' : ''}`}
-                            onClick={() => handleNavClick('products')}
-                        >
-                            Products
-                        </Nav.Link>
-                        {/* <NavDropdown
-                            title={<FaUser style={{ fontSize: "1.2rem", color: "#4B0082" }} />}
-                            id="navbarScrollingDropdown"
-                            align="end"
-                            className="ms-3"
-                        >
-                            <NavDropdown.Item href="#action3">My Profile</NavDropdown.Item>
-                            <NavDropdown.Item href="#action4">Settings</NavDropdown.Item>
-                            <NavDropdown.Divider />
-                            <NavDropdown.Item href="#action5">Logout</NavDropdown.Item>
-                        </NavDropdown> */}
+                        <Nav className="ms-auto my-2 my-lg-0" navbarScroll>
+                            <Link
+                                to="/"
+                                className={`me-4 nav-link-custom ${currentPath === '/' ? 'active-link' : ''}`}
+                            >
+                                Home
+                            </Link>
+                            <Link
+                                to="/products"
+                                className={`me-4 nav-link-custom ${currentPath === '/products' ? 'active-link' : ''}`}
+                            >
+                                Products
+                            </Link>
+                        </Nav>
                     </Nav>
                 </Navbar.Collapse>
             </Container>

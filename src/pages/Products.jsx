@@ -1,9 +1,65 @@
-import { Container, Button, Row, Col, Card } from "react-bootstrap";
+import { Container, Button, Row, Col, Card, Badge } from "react-bootstrap";
 import Header from "../components/Header";
-import { useEffect, useMemo, useState } from "react";
-import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
+import { useEffect, useState } from "react";
 import Form from "../components/Form";
 import axios from 'axios';
+import { Pencil, Trash2 } from 'lucide-react';
+
+const ProductCard = ({ product, onEdit, onDelete }) => {
+    return (
+        <Card
+            className="shadow-sm border-0 h-100 rounded-3"
+            style={{
+                backgroundColor: "#ffffff",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)", // Elegant soft shadow
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-3px)";
+                e.currentTarget.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.1)";
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.06)";
+            }}
+        >
+            <Card.Body className="d-flex flex-column justify-content-between h-100">
+                <div>
+                    <h5 className="fw-semibold text-dark mb-2">{product.name}</h5>
+                    <p className="text-muted small mb-3">{product.description}</p>
+
+                    <div className="mb-3 small text-muted">
+                        <div><strong>ID:</strong> {product.id}</div>
+                        <div><strong>Type:</strong> {product.type}</div>
+                        <div><strong>Vendor:</strong> {product.vendor}</div>
+                    </div>
+
+                    <hr />
+
+                    <div className="d-flex justify-content-between">
+                        <div>
+                            <div className="text-muted small">Price</div>
+                            <div className="fw-semibold text-success">₹{product.price}</div>
+                        </div>
+                        <div>
+                            <div className="text-muted small">Quantity</div>
+                            <div className="fw-semibold text-primary">{product.quantity}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="d-flex justify-content-between mt-4">
+                    <Button variant="success" size="sm" onClick={() => onEdit(product)}>
+                        <Pencil size={14} className="me-1" /> Edit
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => onDelete(product.id)}>
+                        <Trash2 size={14} className="me-1" /> Delete
+                    </Button>
+                </div>
+            </Card.Body>
+        </Card>
+    );
+};
 
 function Products() {
     // const backEndAppUrl = import.meta.env.BACK_END_APP_URL;
@@ -121,46 +177,6 @@ function Products() {
         setEditMode(false);
     };
 
-    const columns = useMemo(
-        () => [
-            { accessorKey: "id", header: "ID" },
-            { accessorKey: "name", header: "Name" },
-            { accessorKey: "description", header: "Description" },
-            { accessorKey: "price", header: "Price" },
-            { accessorKey: "quantity", header: "Quantity" },
-            { accessorKey: "type", header: "Type" },
-            { accessorKey: "vendor", header: "Vendor" },
-            {
-                header: "Action",
-                Cell: ({ row }) => (
-                    <div>
-                        <Button
-                            variant="outline-warning"
-                            size="sm"
-                            onClick={() => handleEdit(row.original)}
-                            className="me-3"
-                        >
-                            Edit
-                        </Button>
-                        <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => handleDelete(row.original.id)}
-                        >
-                            Delete
-                        </Button>
-                    </div>
-                ),
-            },
-        ],
-        [products]
-    );
-
-    const table = useMantineReactTable({
-        columns,
-        data: products,
-    });
-
     return (
         <Container style={{ backgroundColor: "#f3f4f6", minHeight: "100vh", paddingBottom: "50px" }}>
             <Header />
@@ -198,9 +214,20 @@ function Products() {
                     </Row>
                 </Card>
 
-                <div className="p-4 rounded bg-white shadow-sm">
-                    <MantineReactTable table={table} />
+                <div className="p-3 rounded bg-white shadow-sm">
+                    <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+                        {products.map((product) => (
+                            <Col key={product.id}>
+                                <ProductCard
+                                    product={product}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                />
+                            </Col>
+                        ))}
+                    </Row>
                 </div>
+
             </Container>
 
             <Form

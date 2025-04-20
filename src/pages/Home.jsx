@@ -1,7 +1,6 @@
 import { Container, Button, Card, Row, Col, Badge, Modal, Form } from "react-bootstrap";
 import Header from "../components/Header";
-import { useEffect, useMemo, useState } from "react";
-import { MantineReactTable, useMantineReactTable } from "mantine-react-table";
+import { useEffect, useState } from "react";
 import axios from 'axios';
 
 function TopCard({ totalSold, totalRevenue }) {
@@ -11,20 +10,38 @@ function TopCard({ totalSold, totalRevenue }) {
                 <Card.Title className="mb-3" style={{ color: "#4B0082", fontWeight: "600" }}>📦 Stocks Overview</Card.Title>
                 <Row>
                     <Col md={6}>
-                        <h5>
-                            Total Items Sold:{" "}
-                            <Badge style={{ backgroundColor: "#6a0dad", color: "white", fontSize: "1rem" }}>
-                                {totalSold}
-                            </Badge>
-                        </h5>
+                        <div
+                            style={{
+                                backgroundColor: "#6a0dad",
+                                color: "white",
+                                padding: "15px",
+                                borderRadius: "10px",
+                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                textAlign: "center",
+                                fontSize: "1.2rem",
+                                fontWeight: "500",
+                            }}
+                        >
+                            <h5>Total Items Sold</h5>
+                            <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>{totalSold}</span>
+                        </div>
                     </Col>
                     <Col md={6}>
-                        <h5>
-                            Total Revenue:{" "}
-                            <Badge style={{ backgroundColor: "#28a745", color: "white", fontSize: "1rem" }}>
-                                ₹{totalRevenue.toLocaleString()}
-                            </Badge>
-                        </h5>
+                        <div
+                            style={{
+                                backgroundColor: "#28a745",
+                                color: "white",
+                                padding: "15px",
+                                borderRadius: "10px",
+                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                textAlign: "center",
+                                fontSize: "1.2rem",
+                                fontWeight: "500",
+                            }}
+                        >
+                            <h5>Total Revenue</h5>
+                            <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>₹{totalRevenue.toLocaleString()}</span>
+                        </div>
                     </Col>
                 </Row>
             </Card.Body>
@@ -32,17 +49,67 @@ function TopCard({ totalSold, totalRevenue }) {
     );
 }
 
+const StockCardGrid = ({ stockDatas, handleSell }) => {
+    return (
+        <Row>
+            {stockDatas.map((item) => (
+                <Col key={item.productId} md={6} lg={4} className="mb-4">
+                    <Card className="shadow-sm border-0 rounded-3 h-100" style={{ overflow: "hidden", backgroundColor: "#ffffff" }}>
+                        <Card.Body className="d-flex flex-column justify-content-between p-4">
+                            <div className="mb-3">
+                                <h5 className="mb-1" style={{ fontWeight: 500, color: "#333" }}>{item.name}</h5>
+                                <small style={{ color: "#555" }}>ID: {item.productId}</small>
+                            </div>
+                            <div className="mb-3">
+                                <p className="mb-1" style={{ fontSize: "1.2rem", color: "#333" }}>
+                                    <strong style={{ color: "#444" }}>Price:</strong>{" "}
+                                    <span style={{ fontWeight: 600, color: "#6c757d" }}>₹{item.price}</span>
+                                </p>
+                                <p className="mb-1" style={{ fontSize: "1.2rem", color: "#333" }}>
+                                    <strong style={{ color: "#444" }}>Revenue:</strong>{" "}
+                                    <span style={{ fontWeight: 600, color: "#28a745" }}>₹{item.revenueGenerated.toLocaleString()}</span>
+                                </p>
+                            </div>
+                            <div className="d-flex justify-content-between mb-3">
+                                <Badge bg="light" text="dark" className="px-3 py-2" style={{ fontSize: "1rem" }}>
+                                    Stock: {item.stockQuantity}
+                                </Badge>
+                                <Badge bg="light" text="dark" className="px-3 py-2" style={{ fontSize: "1rem" }}>
+                                    Sold: {item.itemsSold}
+                                </Badge>
+                            </div>
+                            <Button
+                                variant="primary"
+                                className="mt-auto w-100"
+                                style={{
+                                    backgroundColor: "#4c9bff",
+                                    borderRadius: "0.5rem",
+                                    fontWeight: 600,
+                                    transition: "all 0.2s ease-in-out",
+                                    border: "none",
+                                    padding: "0.75rem"
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                                onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+                                onClick={() => handleSell(item)}
+                            >
+                                Sell
+                            </Button>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            ))}
+        </Row>
+    );
+};
+
 function Home() {
     // const backEndAppUrl = import.meta.env.BACK_END_APP_URL;
     const backEndAppUrl = "https://stock-management-be-wq7x.onrender.com";
 
-
     const [stockDatas, setStockDatas] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
-    // const [totalItemsSold, setTotalItemsSold] = useState(0);
-    // const [totalRevenue, setTotalRevenue] = useState(0);
-
     const [sellingQuantity, setSellingQuantity] = useState(0);
 
     useEffect(() => {
@@ -179,40 +246,6 @@ function Home() {
     const totalItemsSold = stockDatas.reduce((acc, item) => acc + item.itemsSold, 0);
     const totalRevenue = stockDatas.reduce((acc, item) => acc + item.revenueGenerated, 0);
 
-    const columns = useMemo(() => [
-        { accessorKey: "productId", header: "Product ID" },
-        { accessorKey: "name", header: "Name" },
-        { accessorKey: "price", header: "Price" },
-        { accessorKey: "stockQuantity", header: "Stock Quantity" },
-        { accessorKey: "itemsSold", header: "Items Sold" },
-        { accessorKey: "revenueGenerated", header: "Revenue Generated" },
-        {
-            header: "Action",
-            Cell: ({ row }) => (
-                <Button
-                    variant="primary"
-                    size="sm"
-                    style={{
-                        background: "linear-gradient(135deg, #6a0dad, #4B0082)",
-                        border: "none",
-                        fontWeight: 600,
-                        transition: "transform 0.2s",
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-                    onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
-                    onClick={() => handleSell(row.original)}
-                >
-                    Sell
-                </Button>
-            ),
-        },
-    ], []);
-
-    const table = useMantineReactTable({
-        columns,
-        data: stockDatas
-    });
-
     return (
         <Container style={{ backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
             <Header />
@@ -221,7 +254,7 @@ function Home() {
 
                 <Card className="shadow-sm border-0">
                     <Card.Body>
-                        <MantineReactTable table={table} />
+                        <StockCardGrid stockDatas={stockDatas} handleSell={handleSell} />
                     </Card.Body>
                 </Card>
 
