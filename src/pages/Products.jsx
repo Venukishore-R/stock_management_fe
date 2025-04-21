@@ -260,7 +260,7 @@ function Products() {
             axios.request(config)
                 .then((response) => {
 
-                    if (response.status === 200) {
+                    if (response.status === 201) {
                         setMessageType('success');
                         setMessage("Product Added Successfully");
 
